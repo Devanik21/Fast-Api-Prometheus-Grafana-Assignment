@@ -1,397 +1,181 @@
-# FastAPI + Prometheus + Grafana + Loki + Jaeger — Assignment Deliverables
+# FastAPI Monitoring Stack with Prometheus, Grafana, Loki, and Jaeger
 
+A comprehensive monitoring solution for FastAPI applications, providing:
+- **Metrics Collection** with Prometheus
+- **Visualization** with Grafana
+- **Log Aggregation** with Loki
+- **Distributed Tracing** with Jaeger
 
+## 📋 Table of Contents
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [🚀 Quick Start](#-quick-start)
+- [📊 Monitoring Features](#-monitoring-features)
+  - [Metrics Collection](#metrics-collection)
+  - [Logging](#logging)
+  - [Distributed Tracing](#distributed-tracing)
+- [📂 Project Structure](#-project-structure)
+- [🔧 Configuration](#-configuration)
+  - [Environment Variables](#environment-variables)
+  - [Port Configuration](#port-configuration)
+- [🧪 Running Tests](#-running-tests)
+- [🔍 Debugging](#-debugging)
+- [📈 Performance Considerations](#-performance-considerations)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
-** files & structure**
+## ✨ Features
+
+- **Real-time Metrics**: Monitor request rates, response times, and error rates
+- **Centralized Logging**: Aggregate and search logs across all services
+- **Distributed Tracing**: Track requests across service boundaries
+- **Pre-configured Dashboards**: Ready-to-use Grafana dashboards
+- **Scalable Architecture**: Containerized with Docker for easy deployment
+- **Load Testing**: Built-in script to simulate traffic and test monitoring
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[FastAPI App] -->|Metrics| B[Prometheus]
+    A -->|Logs| C[Loki via Promtail]
+    A -->|Traces| D[Jaeger]
+    B -->|Data Source| E[Grafana]
+    C -->|Data Source| E
+    D -->|Data Source| E
+```
+
+## 🛠️ Prerequisites
+
+- Docker 20.10.0+
+- Docker Compose 1.29.0+
+- Python 3.8+ (for running load tests)
+- 4GB+ RAM recommended
+
+## 🚀 Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/fastapi-monitoring-assignment.git
+   cd fastapi-monitoring-assignment
+   ```
+
+2. **Start the services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access the services**:
+   - 🌐 FastAPI Application: http://localhost:8000
+   - 📊 Grafana: http://localhost:3000 (admin/admin)
+   - 📈 Prometheus: http://localhost:9090
+   - 🔍 Jaeger UI: http://localhost:16686
+
+4. **Generate sample traffic** (optional):
+   ```bash
+   # Install requirements
+   pip install -r app/requirements.txt
+   
+   # Run load test
+   python load_test.py
+   ```
+
+## 📊 Monitoring Features
+
+### Metrics Collection
+- **Endpoints**:
+  - `GET /metrics` - Prometheus metrics endpoint
+  - `GET /health` - Health check endpoint
+
+### Logging
+- Structured JSON logging
+- Log levels: INFO, WARNING, ERROR
+- Logs are shipped to Loki via Promtail
+
+### Distributed Tracing
+- Traces requests across services
+- Integrated with FastAPI middleware
+- View traces in Jaeger UI
+
+## 📂 Project Structure
 
 ```
 fastapi-monitoring-assignment/
-├─ app/
-│  ├─ Dockerfile
-│  ├─ requirements.txt
-│  └─ main.py
-├─ prometheus/
-│  └─ prometheus.yml
-├─ grafana/
-│  └─ provisioning/
-│     └─ datasources/
-│        └─ datasource.yml
-├─ promtail/
-│  └─ promtail-config.yml
-├─ docker-compose.yml
-├─ load_test.py
-└─ README.md
+├── app/                    # FastAPI application
+│   ├── Dockerfile          # Docker configuration
+│   ├── requirements.txt    # Python dependencies
+│   └── main.py            # Application code with instrumentation
+├── prometheus/             
+│   └── prometheus.yml     # Prometheus configuration
+├── grafana/
+│   └── provisioning/      # Grafana provisioning
+│       └── datasources/   # Data source configurations
+│           └── datasource.yml
+├── promtail/
+│   └── promtail-config.yml # Log shipping config
+├── docker-compose.yml     # Service definitions
+├── load_test.py          # Traffic generation script
+└── README.md             # This file
 ```
 
----
+## 🔧 Configuration
 
-## Quick summary (what this does)
+### Environment Variables
 
-* A small FastAPI app (`/` and `/sleep/{ms}`) instrumented to expose Prometheus metrics at `/metrics`, emit structured logs to stdout, and produce OpenTelemetry traces sent to Jaeger.
-* `docker-compose.yml` runs: the app, Prometheus, Grafana, Loki (for logs), Promtail (to ship logs), and Jaeger (for traces).
-* `load_test.py` simulates traffic so you can show request count, latency histograms, logs, and at least one trace in Grafana.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PYTHONUNBUFFERED` | `1` | Ensures Python output is sent to Docker logs |
+| `GF_SECURITY_ADMIN_PASSWORD` | `admin` | Grafana admin password |
+| `GF_USERS_ALLOW_SIGN_UP` | `false` | Disable Grafana sign-up |
 
----
+### Port Configuration
 
-## How to run (short)
+| Service | Port | Description |
+|---------|------|-------------|
+| FastAPI | 8000 | Application port |
+| Grafana | 3000 | Web interface |
+| Prometheus | 9090 | Metrics and alerts |
+| Jaeger UI | 16686 | Distributed tracing |
+| Loki | 3100 | Log aggregation |
 
-1. Build & start everything:
+## 🧪 Running Tests
 
+To run the load test:
 ```bash
-docker-compose up -d --build
+python load_test.py --users 10 --duration 60
 ```
 
-2. Start the traffic generator (locally):
+Options:
+- `--users`: Number of concurrent users (default: 5)
+- `--duration`: Test duration in seconds (default: 300)
 
+## 🔍 Debugging
+
+View logs for a specific service:
 ```bash
-python3 load_test.py
+docker-compose logs -f app  # For FastAPI app
 ```
 
-3. Open these UIs in your browser:
-
-* Grafana: [http://localhost:3000](http://localhost:3000) (default `admin`/`admin`)
-* Prometheus: [http://localhost:9090](http://localhost:9090)
-* Jaeger: [http://localhost:16686](http://localhost:16686)
-
-4. In Grafana you'll already have data sources configured (Prometheus, Loki, Jaeger). Use Explore / Dashboards to visualize metrics, logs, and traces.
-
----
-
-
-
----
-
-## Files (copy these into your project)
-
-> **Note:** the actual file contents are below. Copy each file into the paths shown above.
-
----
-
-### app/requirements.txt
-
-```
-fastapi==0.100.0
-uvicorn[standard]==0.22.0
-prometheus-client==0.16.0
-opentelemetry-api==1.13.0
-opentelemetry-sdk==1.13.0
-opentelemetry-exporter-jaeger==1.13.0
-python-json-logger==2.0.4
-requests==2.31.0
+Check service status:
+```bash
+docker-compose ps
 ```
 
----
+## 📈 Performance Considerations
 
-### app/Dockerfile
+- **Resource Usage**: Monitor container resources with `docker stats`
+- **Scaling**: The FastAPI service can be scaled horizontally
+- **Storage**: Configure volume mounts for persistent data
 
-```
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-COPY main.py ./
-ENV OTEL_SERVICE_NAME=fastapi-assignment
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
+## 🤝 Contributing
 
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### app/main.py
+## 📄 License
 
-```python
-from fastapi import FastAPI, Request
-import time
-import random
-import logging
-import json
-from pythonjsonlogger import jsonlogger
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-from prometheus_client import CollectorRegistry
-from prometheus_client import multiprocess
-from prometheus_client import REGISTRY
-from prometheus_client import exposition
-from prometheus_client import start_http_server
-from starlette.responses import Response
-import sys
-
-# OpenTelemetry
-from opentelemetry import trace
-from opentelemetry.sdk.resources import Resource
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
-
-# Configure structured logging
-logger = logging.getLogger("fastapi_assignment")
-logHandler = logging.StreamHandler(sys.stdout)
-formatter = jsonlogger.JsonFormatter('%(asctime)s %(levelname)s %(name)s %(message)s')
-logHandler.setFormatter(formatter)
-logger.addHandler(logHandler)
-logger.setLevel(logging.INFO)
-
-# Prometheus metrics
-REQUEST_COUNT = Counter(
-    'http_request_count_total', 'Total HTTP requests', ['method', 'endpoint', 'status']
-)
-REQUEST_LATENCY = Histogram(
-    'http_request_latency_seconds', 'Latency of HTTP requests in seconds', ['method', 'endpoint']
-)
-
-# OpenTelemetry tracer (Jaeger exporter)
-resource = Resource.create({"service.name": "fastapi-assignment"})
-provider = TracerProvider(resource=resource)
-jaeger_exporter = JaegerExporter(
-    agent_host_name="jaeger",
-    agent_port=6831,
-)
-provider.add_span_processor(BatchSpanProcessor(jaeger_exporter))
-trace.set_tracer_provider(provider)
-tracer = trace.get_tracer(__name__)
-
-app = FastAPI()
-
-@app.middleware("http")
-async def prom_middleware(request: Request, call_next):
-    start = time.time()
-    method = request.method
-    endpoint = request.url.path
-    with tracer.start_as_current_span(f"HTTP {method} {endpoint}") as span:
-        try:
-            response = await call_next(request)
-            status = response.status_code
-        except Exception as e:
-            status = 500
-            logger.exception("Unhandled exception")
-            raise
-        finally:
-            latency = time.time() - start
-            REQUEST_COUNT.labels(method=method, endpoint=endpoint, status=str(status)).inc()
-            REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(latency)
-            logger.info(json.dumps({
-                "path": endpoint,
-                "method": method,
-                "status": status,
-                "latency": latency
-            }))
-    return response
-
-@app.get('/')
-async def root():
-    with tracer.start_as_current_span("handler_root"):
-        # simulate some work
-        t = random.random() * 0.1
-        time.sleep(t)
-        return {"message": "hello from fastapi assignment"}
-
-@app.get('/sleep/{ms}')
-async def sleep_ms(ms: int):
-    with tracer.start_as_current_span("handler_sleep"):
-        t = max(0, ms) / 1000.0
-        time.sleep(t)
-        return {"slept_ms": ms}
-
-@app.get('/metrics')
-async def metrics():
-    # Use the default registry
-    data = generate_latest()
-    return Response(content=data, media_type=CONTENT_TYPE_LATEST)
-```
-
----
-
-### prometheus/prometheus.yml
-
-```yaml
-global:
-  scrape_interval: 5s
-
-scrape_configs:
-  - job_name: 'fastapi'
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['app:8000']
-
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['prometheus:9090']
-```
-
----
-
-### promtail/promtail-config.yml
-
-```yaml
-server:
-  http_listen_port: 9080
-  grpc_listen_port: 0
-
-positions:
-  filename: /tmp/positions.yaml
-
-clients:
-  - url: http://loki:3100/loki/api/v1/push
-
-scrape_configs:
-  - job_name: system
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: varlogs
-          __path__: /var/lib/docker/containers/*/*.log
-```
-
----
-
-### grafana/provisioning/datasources/datasource.yml
-
-```yaml
-apiVersion: 1
-providers: []
-
----
-
-# Grafana datasource provisioning
-
-apiVersion: 1
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://prometheus:9090
-    isDefault: true
-  - name: Loki
-    type: loki
-    access: proxy
-    url: http://loki:3100
-  - name: Jaeger
-    type: jaeger
-    access: proxy
-    url: http://jaeger:16686
-```
-
----
-
-### docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-  app:
-    build: ./app
-    container_name: fastapi-assignment
-    ports:
-      - '8000:8000'
-    networks:
-      - monitoring
-
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - '9090:9090'
-    networks:
-      - monitoring
-
-  grafana:
-    image: grafana/grafana:latest
-    depends_on:
-      - prometheus
-      - loki
-      - jaeger
-    ports:
-      - '3000:3000'
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    networks:
-      - monitoring
-
-  loki:
-    image: grafana/loki:2.8.2
-    ports:
-      - '3100:3100'
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - monitoring
-
-  promtail:
-    image: grafana/promtail:2.8.2
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/log:/var/log:ro
-      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - monitoring
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.49
-    ports:
-      - '16686:16686'
-      - '6831:6831/udp'
-    networks:
-      - monitoring
-
-networks:
-  monitoring:
-    driver: bridge
-```
-
----
-
-### load\_test.py
-
-```python
-# Simple traffic generator
-import requests
-import time
-import random
-
-URL = 'http://localhost:8000'
-
-for i in range(200):
-    try:
-        if random.random() < 0.3:
-            # hit sleep endpoint with variable latency
-            ms = random.choice([50, 100, 200, 500, 1000])
-            r = requests.get(f'{URL}/sleep/{ms}', timeout=5)
-        else:
-            r = requests.get(URL, timeout=5)
-        print(i, r.status_code, r.elapsed.total_seconds())
-    except Exception as e:
-        print('err', e)
-    time.sleep(0.1)
-
-print('done')
-```
-
----
-
-### README.md
-
-```
-See the Quick summary in the top of this document.
-
-Full steps to run locally:
-
-1. Make sure Docker & docker-compose are installed.
-2. From repo root run: `docker-compose up -d --build`.
-3. Wait ~15s for containers to start.
-4. Run traffic: `python3 load_test.py`.
-5. Open Grafana at http://localhost:3000 (admin/admin). Explore Prometheus ("Prometheus" datasource) and Loki ("Loki") and Jaeger traces (via Jaeger datasource).
-
-Hints:
-- In Grafana Explore you can run `rate(http_request_count_total[1m])` or inspect `http_request_latency_seconds_bucket` histogram metrics.
-- To find logs from the app in Loki's Explore use `{job="varlogs"}` and then filter for `fastapi-assignment` or inspect messages containing `"path": "/"`.
-- Jaeger UI: http://localhost:16686 — service dropdown will show `fastapi-assignment`.
-
-
-```
-
----
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
