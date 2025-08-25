@@ -390,11 +390,7 @@ Hints:
 - To find logs from the app in Loki's Explore use `{job="varlogs"}` and then filter for `fastapi-assignment` or inspect messages containing `"path": "/"`.
 - Jaeger UI: http://localhost:16686 — service dropdown will show `fastapi-assignment`.
 
-Recording tips:
-- Narrate what you do and why. Show the command you run, the traffic generation, and the Grafana visualizations.
-- Make sure you capture at least one trace in Jaeger or Grafana traces while load_test.py is running.
 
-Good luck! you’ve got this — record confidently and show them how you set it up end-to-end. 💖
 ```
 
 ---
