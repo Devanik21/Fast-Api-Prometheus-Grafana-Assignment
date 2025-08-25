@@ -57,14 +57,7 @@ python3 load_test.py
 
 ---
 
-## Recording checklist for the 3–5 min screen recording
 
-* Show `docker-compose up -d --build` (or show the running containers)
-* Run `python3 load_test.py` and show traffic being generated
-* Open Grafana > Explore: show Prometheus query for `http_request_count_total` and a latency histogram/summary
-* Show logs from Loki (use `{app="fastapi-assignment"}` or search by container label)
-* Open Traces (Jaeger) inside Grafana (or open Jaeger UI) and show at least one request trace
-* Briefly explain what you did (30–60s)
 
 ---
 
@@ -406,10 +399,3 @@ Good luck! you’ve got this — record confidently and show them how you set it
 
 ---
 
-If you want, I can also:
-
-* Create a pre-built Grafana dashboard JSON for the metrics and add it to provisioning.
-* Make the load test more robust (concurrent requests with asyncio or `locust`/`hey`).
-* Provide a short script to make an mp4 screen recording automatically (depends on your OS).
-
-Say the word and I’ll add the extras. 🌸
