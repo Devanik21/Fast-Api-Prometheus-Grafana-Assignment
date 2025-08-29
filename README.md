@@ -1,6 +1,6 @@
 # FastAPI Monitoring Stack with Prometheus, Grafana, Loki, and Jaeger
 
-A comprehensive monitoring solution for FastAPI applications, providing:
+A comprehensive monitoring solution for FastAPI applications, providing: 
 - **Metrics Collection** with Prometheus
 - **Visualization** with Grafana
 - **Log Aggregation** with Loki
